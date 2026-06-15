@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI MovieVerse</title>
+
+<link rel="stylesheet"
+    href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<div class="hero">
+
+<h1>🎬 AI MovieVerse</h1>
+
+<p>
+    Explore Your Movie Universe
+</p>
+
+<p class="subtitle">
+    Discover your next favorite movie through Artificial Intelligence,
+    Collaborative Filtering and User Behavior Analysis.
+</p>
+
+<form method="POST">
+
+    <div class="search-box">
+
+        <input
+            type="text"
+            name="movie"
+            id="movieInput"
+            placeholder="Search Movie..."
+            autocomplete="off"
+            required>
+
+        <div id="suggestions"></div>
+
+        <button type="submit" id="recommendBtn">
+            Recommend
+        </button>
+
+    </div>
+
+</form>
+
+<div class="stats">
+
+    <div>
+        <h2>9,742+</h2>
+        <span>Movies</span>
+    </div>
+
+    <div>
+        <h2>100K+</h2>
+        <span>Ratings</span>
+    </div>
+
+    <div>
+        <h2>610+</h2>
+        <span>Users</span>
+    </div>
+
+</div>
+
+</div>
+
+{% if recommendations %}
+
+<div class="results-section">
+
+<h2>
+    🎯 Top Matches For "{{ movie_name }}"
+</h2>
+
+<div class="movie-grid">
+
+    {% for movie in recommendations %}
+
+    <div class="movie-wrapper {% if loop.index > 5 %}hidden-movie{% endif %}">
+
+    <div class="movie-card">
+
+        <img
+            src="{{ movie.poster if movie.poster else 'https://via.placeholder.com/300x450?text=No+Poster' }}"
+            alt="{{ movie.title }}"
+            class="poster">
+
+        <div class="movie-info">
+
+            <h3>{{ movie.title }}</h3>
+
+            <p class="genres">
+                🎭 {{ movie.genres }}
+            </p>
+
+            <p class="runtime">
+                ⏱ {{ movie.runtime }} min
+            </p>
+
+            <p class="cast">
+                🎬 {{ movie.cast }}
+            </p>
+
+            <p class="rating">
+                ⭐ {{ movie.rating }}
+            </p>
+
+            <p class="release-date">
+                📅 {{ movie.release_date }}
+            </p>
+
+            <p class="overview">
+                {{ movie.overview }}
+            </p>
+
+            <div class="movie-links">
+
+                {% if movie.trailer %}
+                <a
+                    href="{{ movie.trailer }}"
+                    target="_blank">
+                    ▶ Trailer
+                </a>
+                {% endif %}
+
+                {% if movie.imdb_link %}
+                <a
+                    href="{{ movie.imdb_link }}"
+                    target="_blank">
+                    IMDb
+                </a>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+</div>
+
+{% if recommendations|length > 5 %}
+
+<div class="load-more-container">
+
+    <button id="loadMoreBtn">
+        Load More
+    </button>
+
+</div>
+
+{% endif %}
+
+{% endif %}
+
+{% if no_results %}
+
+<div class="no-results">
+
+    <h2>
+        😔 Movie Not Found
+    </h2>
+
+    <p>
+        No recommendations found for
+        "{{ movie_name }}"
+    </p>
+
+    <p>
+        Try searching:
+    </p>
+
+    <div class="suggested-movies">
+
+        <button class="quick-search">
+            Toy Story
+        </button>
+
+        <button class="quick-search">
+            Batman
+        </button>
+
+        <button class="quick-search">
+            Avatar
+        </button>
+
+        <button class="quick-search">
+            Avengers
+        </button>
+
+    </div>
+
+</div>
+
+{% endif %}
+
+<script>
+
+document.querySelector("form")
+.addEventListener("submit", function() {
+
+    const btn =
+    document.getElementById("recommendBtn");
+
+    btn.innerHTML =
+    "Loading...";
+});
+
+const loadMoreBtn =
+document.getElementById(
+    "loadMoreBtn"
+);
+
+if(loadMoreBtn){
+
+    loadMoreBtn.addEventListener(
+        "click",
+        function(){
+
+            const hiddenMovies =
+            document.querySelectorAll(
+                ".hidden-movie"
+            );
+
+            hiddenMovies.forEach(
+                movie => {
+
+                    movie.classList.remove(
+                        "hidden-movie"
+                    );
+
+                }
+            );
+
+            loadMoreBtn.style.display =
+            "none";
+        }
+    );
+}
+
+</script>
+
+<script>
+
+const movies =
+{{ movie_titles|tojson|safe }};
+
+const input =
+document.getElementById(
+    "movieInput"
+);
+
+const suggestions =
+document.getElementById(
+    "suggestions"
+);
+
+input.addEventListener(
+    "input",
+    function(){
+
+        const value =
+        this.value.toLowerCase();
+
+        suggestions.innerHTML = "";
+
+        if(value.length < 2){
+            return;
+        }
+
+        const filtered =
+        movies.filter(movie =>
+            movie.toLowerCase()
+            .includes(value)
+        ).slice(0,5);
+
+        filtered.forEach(movie => {
+
+            const div =
+            document.createElement("div");
+
+            div.classList.add(
+                "suggestion-item"
+            );
+
+            div.innerText =
+            movie;
+
+            div.addEventListener(
+                "click",
+                function(){
+
+                    input.value =
+                    movie.replace(/\(\d{4}\)/, "").trim();
+
+                    suggestions.innerHTML =
+                    "";
+                }
+            );
+
+            suggestions.appendChild(
+                div
+            );
+
+        });
+
+    }
+);
+
+</script>
+
+<footer class="footer">
+
+    <div class="footer-content">
+
+        <h3>About AI MovieVerse</h3>
+
+        <p>
+            AI MovieVerse is an intelligent movie recommendation platform
+            designed to help users discover movies based on their interests.
+        </p>
+
+        <p>
+            The system combines Content-Based Filtering and Collaborative
+            Filtering techniques to generate accurate recommendations.
+        </p>
+
+        <p>
+            Users can explore movie details including ratings, cast,
+            genres, trailers and IMDb information in one place.
+        </p>
+
+        <p>
+            Built using Python, Flask, Machine Learning and TMDB API.
+        </p>
+
+        <p>
+            Developed by Vishal Jindal
+        </p>
+
+        <p>
+            📧 jindalvishal2006@gmail.com
+        </p>
+
+        <p>
+            © 2026 AI MovieVerse. All Rights Reserved.
+        </p>
+
+    </div>
+
+</footer>
+
+<script>
+
+document
+.querySelectorAll(".quick-search")
+.forEach(button => {
+
+    button.addEventListener(
+        "click",
+        function(){
+
+            document.getElementById(
+                "movieInput"
+            ).value = this.innerText;
+
+            document
+            .querySelector("form")
+            .submit();
+
+        }
+    );
+
+});
+
+</script>
+
+</body>
+
+</html>
