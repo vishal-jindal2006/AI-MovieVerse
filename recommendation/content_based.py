@@ -17,11 +17,6 @@ tfidf_matrix = tfidf.fit_transform(
     movies["genres"]
 )
 
-# Similarity Matrix
-similarity = cosine_similarity(
-    tfidf_matrix
-)
-
 
 def recommend(movie_name, top_n=5):
 
@@ -39,10 +34,16 @@ def recommend(movie_name, top_n=5):
 
     movie_index = matches.index[0]
 
+    # Calculate similarity only for searched movie
+    movie_vector = tfidf_matrix[movie_index]
+
+    similarities = cosine_similarity(
+        movie_vector,
+        tfidf_matrix
+    ).flatten()
+
     distances = list(
-        enumerate(
-            similarity[movie_index]
-        )
+        enumerate(similarities)
     )
 
     distances = sorted(
